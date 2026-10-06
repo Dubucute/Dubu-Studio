@@ -1,0 +1,196 @@
+@import 'tailwindcss';
+
+/* next/font injects the actual families; Tailwind exposes them as font-display / font-body
+   and the canvas renderer reads the same computed values back out (see engine/stickers.ts). */
+@theme inline {
+  --font-display: var(--font-quicksand);
+  --font-body: var(--font-nunito);
+}
+
+@theme {
+  /* Soft pastels */
+  --color-blush-50: #fff6fa;
+  --color-blush-100: #ffeaf2;
+  --color-blush-200: #ffd6e6;
+  --color-blush-300: #ffb3cd;
+  --color-blush-400: #ff8fb8;
+
+  --color-lav-100: #f4efff;
+  --color-lav-200: #e2d6ff;
+  --color-lav-300: #cbb6ff;
+  --color-lav-400: #ae90ff;
+
+  --color-mint-100: #ecfbf5;
+  --color-mint-200: #d3f5e7;
+  --color-mint-300: #93e3c8;
+  --color-mint-400: #5ccfae;
+
+  --color-butter-100: #fffbe9;
+  --color-butter-200: #fff0bf;
+  --color-butter-300: #ffe28a;
+  --color-butter-400: #ffcf4d;
+
+  --color-sky-100: #f1f8ff;
+  --color-sky-200: #d6ecff;
+  --color-sky-300: #a5d6ff;
+  --color-sky-400: #74baff;
+
+  /* High-contrast friendly text colours (all pass AA on the pastels above) */
+  --color-ink: #453458;
+  --color-ink-soft: #6e5c82;
+  --color-ink-faint: #93859f;
+
+  --radius-blob: 2rem;
+  --radius-blob-sm: 1.25rem;
+
+  --shadow-cute: 0 20px 45px -24px rgba(69, 52, 88, 0.5);
+  --shadow-pop: 0 6px 0 0 rgba(69, 52, 88, 0.15);
+
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-wiggle: wiggle 0.5s ease-in-out;
+  --animate-float: float 5s ease-in-out infinite;
+  --animate-blink: blink 6s ease-in-out infinite;
+  --animate-shutter: shutter 0.28s ease-out;
+  --animate-rain: rain 1.7s linear forwards;
+  --animate-rise: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes shutter {
+  0% { opacity: 0; }
+  12% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes rain {
+  from { transform: translateY(-12vh) rotate(0deg); opacity: 1; }
+  to { transform: translateY(112vh) rotate(540deg); opacity: 0; }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    /* A soft pastel backdrop so the whole app feels like one big sticker. */
+    background-color: var(--color-blush-50);
+    background-image:
+      radial-gradient(58rem 34rem at 8% -10%, var(--color-lav-200) 0%, transparent 60%),
+      radial-gradient(46rem 30rem at 100% 0%, var(--color-blush-200) 0%, transparent 55%),
+      radial-gradient(52rem 34rem at 50% 110%, var(--color-mint-200) 0%, transparent 60%);
+    background-attachment: fixed;
+    color: var(--color-ink);
+    min-height: 100dvh;
+    /* Stop iOS from flashing grey when a drag starts on a photo. */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Never let a horizontal drag on the strip scroll the page sideways. */
+  .no-touch-scroll {
+    touch-action: none;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-lav-400);
+    outline-offset: 3px;
+    border-radius: 1rem;
+  }
+
+  ::selection {
+    background: var(--color-blush-200);
+  }
+
+  /* Inputs stay at 16px so iOS Safari never zooms in on focus. */
+  input,
+  textarea,
+  select {
+    font-size: 1rem;
+  }
+}
+
+@layer utilities {
+  /* Chunky, toy-like press feel for every interactive surface. */
+  .chunky {
+    box-shadow: var(--shadow-pop);
+    transition:
+      transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.15s ease,
+      background-color 0.2s ease;
+  }
+  .chunky:hover {
+    transform: translateY(-2px);
+  }
+  .chunky:active {
+    transform: translateY(3px);
+    box-shadow: 0 3px 0 0 rgba(69, 52, 88, 0.16);
+  }
+
+  .cute-card {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-cute);
+  }
+
+  /*
+   * How much height a photo strip may take. On phones the strip is the hero and gets the full
+   * column width (the page scrolls); on desktop it sits in a sticky column, so it is capped to
+   * the viewport. `StripCanvas` turns this into a max-width via the strip's aspect ratio.
+   */
+  .strip-frame {
+    --strip-max-h: 200vh;
+  }
+  @media (min-width: 768px) {
+    .strip-frame {
+      --strip-max-h: 74dvh;
+    }
+  }
+  @media (min-width: 1280px) {
+    .strip-frame {
+      --strip-max-h: 84dvh;
+    }
+  }
+
+  /* Confetti pieces dropped by the shutter celebration. */
+  .confetti-bit {
+    position: absolute;
+    top: 0;
+    width: 10px;
+    height: 14px;
+    border-radius: 3px;
+    animation: var(--animate-rain);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .chunky:hover,
+  .chunky:active {
+    transform: none;
+  }
+}
