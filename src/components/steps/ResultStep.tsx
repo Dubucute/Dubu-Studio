@@ -8,7 +8,7 @@
  */
 import { useState } from 'react'
 import StripCanvas from '@/components/strip/StripCanvas'
-import { Btn } from '@/components/ui/kit'
+import { Btn, Window } from '@/components/ui/kit'
 import { Ico } from '@/components/ui/icons'
 import { EXPORT_WIDTH } from '@/engine/compose'
 import { downloadBlob, exportStripPng, shareBlob, suggestedFilename } from '@/engine/export'
@@ -79,29 +79,27 @@ export default function ResultStep() {
         ))}
       </div>
 
-      <div className="relative z-10 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:items-center">
-        <div>
+      <div className="relative z-10 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:items-start">
+        <Window title="Preview" icon="star" bodyClassName="p-3 sm:p-4">
           <StripCanvas
             design={design}
             photos={photos}
             label="Your finished photo strip"
-            className="ring-4 ring-white"
           />
-        </div>
+        </Window>
 
-        <div className="cute-card rounded-blob p-5 sm:p-6">
-          <h2 className="font-display text-2xl font-bold">Your strip is ready</h2>
-          <p className="mt-1 text-sm font-semibold text-ink-soft">
+        <Window title="Save your strip" icon="download" tone="mauve">
+          <p className="text-sm font-semibold text-ink-soft">
             {photos.length} photos, exported at {EXPORT_WIDTH}px wide. Everything was drawn in
             this browser.
           </p>
 
-          <div className="mt-5 flex flex-col gap-2">
+          <div className="mt-5 flex flex-col gap-2.5">
             <Btn tone="ink" size="lg" block onClick={() => void save()} disabled={working}>
               <Ico name={working ? 'loader' : 'download'} className={working ? 'animate-spin' : ''} />
               {working ? 'Preparing the PNG' : 'Download the PNG'}
             </Btn>
-            <Btn tone="white" block onClick={() => void share()} disabled={working}>
+            <Btn tone="paper" block onClick={() => void share()} disabled={working}>
               <Ico name="share" />
               Share it
             </Btn>
@@ -114,7 +112,7 @@ export default function ResultStep() {
           {note && (
             <p
               role="status"
-              className="mt-4 flex items-start gap-2 rounded-2xl bg-mint-100 px-3 py-2 text-sm font-semibold text-ink"
+              className="well mt-4 flex items-start gap-2 px-3 py-2 text-sm font-semibold text-ink"
             >
               <Ico name="check" className="mt-0.5 size-4 shrink-0 text-mint-400" />
               {note}
@@ -125,7 +123,7 @@ export default function ResultStep() {
             <Ico name="lock" className="mt-0.5 size-3.5 shrink-0" />
             No uploads, no tracking, no watermark. Close the tab and it is gone.
           </p>
-        </div>
+        </Window>
       </div>
     </div>
   )

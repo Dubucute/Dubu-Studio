@@ -27,13 +27,13 @@ export function FilterPicker() {
             type="button"
             aria-pressed={active}
             onClick={() => setFilter(filter.id)}
-            className={`chunky flex flex-col items-center gap-1.5 rounded-2xl border-2 p-2 ${
-              active ? 'border-ink/70 bg-white' : 'border-transparent bg-white/60 hover:bg-white'
+            className={`chunky flex flex-col items-center gap-1.5 rounded-xl border-2 p-2 ${
+              active ? 'border-ink bg-lav-200 shadow-toy-xs' : 'border-ink/40 bg-paper hover:border-ink'
             }`}
           >
             <span
               aria-hidden
-              className="size-9 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(69,52,88,0.25)]"
+              className="size-9 rounded-full border-2 border-ink"
               style={{ background: `linear-gradient(135deg, ${filter.swatch[0]}, ${filter.swatch[1]})` }}
             />
             <span className="text-xs leading-tight font-bold text-ink">{filter.label}</span>
@@ -61,14 +61,14 @@ export function LayoutPicker() {
             type="button"
             aria-pressed={active}
             onClick={() => setLayout(layout.id)}
-            className={`chunky flex items-center gap-2 rounded-2xl border-2 px-3 py-2 ${
-              active ? 'border-ink/70 bg-white' : 'border-transparent bg-white/60 hover:bg-white'
+            className={`chunky flex items-center gap-2 rounded-xl border-2 px-3 py-2 ${
+              active ? 'border-ink bg-lav-200 shadow-toy-xs' : 'border-ink/40 bg-paper hover:border-ink'
             }`}
           >
             {/* Miniature of the layout's grid, drawn from the same cols/rows the renderer uses. */}
             <span
               aria-hidden
-              className="grid gap-[2px] rounded-[4px] bg-lav-100 p-[3px]"
+              className="grid gap-[2px] rounded-[4px] border border-ink/30 bg-lav-100 p-[3px]"
               style={{ gridTemplateColumns: `repeat(${layout.cols}, 1fr)` }}
             >
               {Array.from({ length: layout.cols * layout.rows }, (_, i) => (
@@ -99,13 +99,13 @@ export function FramePicker() {
             aria-pressed={active}
             onClick={() => setFrame(frame.id)}
             title={def.label}
-            className={`chunky flex flex-col items-center gap-1 rounded-2xl border-2 p-2 ${
-              active ? 'border-ink/70 bg-white' : 'border-transparent bg-white/60 hover:bg-white'
+            className={`chunky flex flex-col items-center gap-1 rounded-xl border-2 p-2 ${
+              active ? 'border-ink bg-lav-200 shadow-toy-xs' : 'border-ink/40 bg-paper hover:border-ink'
             }`}
           >
             <span
               aria-hidden
-              className="grid size-9 place-items-center rounded-xl bg-white text-ink shadow-[0_2px_6px_rgba(69,52,88,0.2)]"
+              className="grid size-9 place-items-center rounded-lg border-2 border-ink bg-paper text-ink"
               style={
                 def.kind === 'flat' && def.thickness > 0
                   ? { border: `${Math.max(2, def.thickness * 26)}px solid ${def.fill ?? '#FFB3CD'}` }

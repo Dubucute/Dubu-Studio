@@ -89,14 +89,25 @@ export function drawStickerDef(
   ctx.restore()
 }
 
-/** Paint one placed sticker. `unit` is pixels per layout unit (i.e. the output width). */
-export function paintSticker(ctx: CanvasRenderingContext2D, sticker: Sticker, unit: number) {
+/**
+ * Paint one placed sticker.
+ *
+ * Sticker geometry is normalized against the strip box: `x` and `size` are fractions of the
+ * strip WIDTH, `y` is a fraction of the strip HEIGHT — exactly how the DOM layer positions
+ * them (`left`/`width` in %, `top` in %). Passing one unit for both axes made stickers land
+ * near the top of tall strips like the classic 4-cut.
+ */
+export function paintSticker(
+  ctx: CanvasRenderingContext2D,
+  sticker: Sticker,
+  unit: { width: number; height: number },
+) {
   const def = stickerById(sticker.defId)
   if (!def) return
   drawStickerDef(ctx, def, {
-    x: sticker.x * unit,
-    y: sticker.y * unit,
-    size: sticker.size * unit,
+    x: sticker.x * unit.width,
+    y: sticker.y * unit.height,
+    size: sticker.size * unit.width,
     rotation: sticker.rotation,
     color: sticker.color,
   })

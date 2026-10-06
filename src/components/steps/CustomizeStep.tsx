@@ -13,7 +13,7 @@ import StickerIcon from '@/components/strip/StickerIcon'
 import StickerTray from '@/components/customize/StickerTray'
 import TextEditor from '@/components/customize/TextEditor'
 import { FilterPicker, FramePicker, LayoutPicker } from '@/components/customize/pickers'
-import { Card } from '@/components/ui/kit'
+import { Window } from '@/components/ui/kit'
 import { Ico } from '@/components/ui/icons'
 import { MAX_STICKER_SIZE, MIN_STICKER_SIZE, STICKER_COLORS, stickerById } from '@/core/stickers'
 import { playCue } from '@/engine/audio'
@@ -35,23 +35,23 @@ export default function CustomizeStep() {
   return (
     <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] md:items-start xl:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <div className="md:sticky md:top-24">
-        <StripCanvas
-          design={design}
-          photos={photos}
-          interactive
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          boxRef={stripRef}
-          label="Your photo strip, live preview"
-        />
+        <Window title="Preview" icon="star" bodyClassName="p-3 sm:p-4">
+          <StripCanvas
+            design={design}
+            photos={photos}
+            interactive
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            boxRef={stripRef}
+            label="Your photo strip, live preview"
+          />
+        </Window>
 
         {selected && selectedDef ? (
-          <div className="animate-rise mt-3 rounded-blob bg-white p-4 shadow-cute">
-            <div className="flex items-center gap-3">
-              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-blush-50">
-                <StickerIcon def={selectedDef} color={selected.color} className="size-8" />
-              </span>
-              <p className="font-display text-base font-bold">{selectedDef.name}</p>
+          <div className="window animate-rise mt-3 overflow-hidden">
+            <div className="window-bar bg-mauve-500 text-white">
+              <StickerIcon def={selectedDef} color={selected.color} className="size-4" />
+              <span className="text-sm font-bold">{selectedDef.name} sticker</span>
               <button
                 type="button"
                 onClick={() => {
@@ -59,11 +59,12 @@ export default function CustomizeStep() {
                   setSelectedId(null)
                 }}
                 aria-label="Delete selected sticker"
-                className="chunky ml-auto grid size-9 place-items-center rounded-full bg-blush-100 text-ink hover:bg-blush-200"
+                className="chunky ml-auto grid size-6 place-items-center rounded-md border-2 border-ink bg-paper text-ink shadow-toy-xs"
               >
-                <Ico name="trash" className="size-4" />
+                <Ico name="trash" className="size-3.5" />
               </button>
             </div>
+            <div className="p-4">
 
             <label className="mt-3 block text-xs font-bold text-ink-faint">
               Size
@@ -100,57 +101,59 @@ export default function CustomizeStep() {
                   aria-label={`Colour sticker ${color}`}
                   aria-pressed={selected.color === color}
                   onClick={() => patchSticker(selected.id, { color })}
-                  className={`chunky size-8 rounded-full border-2 ${
-                    selected.color === color ? 'border-ink' : 'border-white'
+                  className={`chunky size-8 rounded-lg border-2 shadow-toy-xs ${
+                    selected.color === color ? 'border-ink' : 'border-ink/30'
                   }`}
                   style={{ background: color }}
                 />
               ))}
             </div>
+            </div>
           </div>
         ) : (
-          <p className="mt-3 flex items-center justify-center gap-2 rounded-2xl bg-white/70 px-3 py-2 text-center text-sm font-semibold text-ink-soft">
-            <Ico name="mouse-pointer" className="size-4 shrink-0 text-lav-400" />
+          <p className="well mt-3 flex items-center justify-center gap-2 px-3 py-2 text-center text-sm font-semibold text-ink-soft">
+            <Ico name="mouse-pointer" className="size-4 shrink-0 text-lav-500" />
             Drag a sticker from the tray onto the strip, then drag it anywhere you like.
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-4">
-        <Card icon="palette" title="Filter">
+        <Window title="Filter" panel icon="palette">
           <FilterPicker />
-        </Card>
+        </Window>
 
-        <Card icon="layout-grid" title="Layout">
+        <Window title="Layout" panel icon="layout-grid">
           <LayoutPicker />
-        </Card>
+        </Window>
 
-        <Card icon="square" title="Frame">
+        <Window title="Frame" panel icon="square">
           <FramePicker />
-        </Card>
+        </Window>
 
-        <Card
+        <Window
+          title="Stickers" panel
           icon="heart"
-          title="Stickers"
-          hint={design.stickers.length ? `${design.stickers.length} on the strip` : undefined}
-          action={
+          controls={
             design.stickers.length > 0 ? (
               <button
                 type="button"
                 onClick={clearStickers}
-                className="chunky rounded-full bg-blush-50 px-3 py-1.5 text-xs font-bold text-ink-soft hover:bg-blush-100"
+                className="chunky rounded-md border-2 border-ink bg-paper px-2 py-0.5 text-[11px] font-bold text-ink shadow-toy-xs"
               >
                 Clear all
               </button>
-            ) : null
+            ) : (
+              <span className="text-[11px] font-bold text-ink/70">{design.stickers.length} placed</span>
+            )
           }
         >
           <StickerTray stripRef={stripRef} />
-        </Card>
+        </Window>
 
-        <Card icon="pen-line" title="Caption and date">
+        <Window title="Caption and date" panel icon="pen-line">
           <TextEditor />
-        </Card>
+        </Window>
       </div>
     </div>
   )

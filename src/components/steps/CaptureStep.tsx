@@ -9,7 +9,7 @@
  */
 import { useRef, useState } from 'react'
 import CameraStage from '@/components/camera/CameraStage'
-import { Btn, Switch } from '@/components/ui/kit'
+import { Btn, Switch, Window } from '@/components/ui/kit'
 import { Ico } from '@/components/ui/icons'
 import { filterById } from '@/core/filters'
 import { layoutFor } from '@/engine/compose'
@@ -56,37 +56,39 @@ export default function CaptureStep() {
       />
 
       <div className="flex flex-col gap-4">
-        <div className="cute-card rounded-blob p-4 sm:p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-bold">Your photos</h2>
-            <p className="flex items-center gap-1.5 text-sm font-semibold text-ink-soft">
-              <Ico name={layout.icon} className="size-4" />
-              {layout.label}
-              <span className="rounded-full bg-blush-100 px-2 py-0.5 text-xs font-bold text-ink">
-                {photos.length} of {MAX_PHOTOS}
-              </span>
-            </p>
-          </div>
+        <Window
+          title="Your photos" panel
+          icon="images"
+          controls={
+            <span className="rounded-full border-2 border-ink bg-paper px-2 py-0.5 text-[11px] font-bold text-ink">
+              {photos.length} of {MAX_PHOTOS}
+            </span>
+          }
+        >
+          <p className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-ink-soft">
+            <Ico name={layout.icon} className="size-4 text-lav-500" />
+            Laid out as {layout.label}
+          </p>
 
           {photos.length === 0 ? (
-            <p className="mt-3 rounded-2xl bg-blush-50 p-4 text-center text-sm font-semibold text-ink-soft">
+            <p className="well p-4 text-center text-sm font-semibold text-ink-soft">
               Nothing on the roll yet. Shoot a photo, upload some, or start with the samples.
             </p>
           ) : (
-            <ul className="mt-3 flex gap-2 overflow-x-auto pb-2">
+            <ul className="flex gap-3 overflow-x-auto pb-2">
               {photos.map((photo, index) => (
                 <li key={photo.id} className="relative shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.src}
                     alt={`Photo ${index + 1}`}
-                    className="size-20 rounded-2xl border-2 border-white object-cover shadow-cute sm:size-24"
+                    className="size-20 rounded-lg border-2 border-ink object-cover shadow-toy-xs sm:size-24"
                   />
                   <button
                     type="button"
                     onClick={() => removePhoto(photo.id)}
                     aria-label={`Remove photo ${index + 1}`}
-                    className="chunky absolute -right-2 -top-2 grid size-7 place-items-center rounded-full bg-ink text-white"
+                    className="chunky absolute -right-2 -top-2 grid size-7 place-items-center rounded-lg border-2 border-ink bg-mauve-500 text-white shadow-toy-xs"
                   >
                     <Ico name="x" className="size-3.5" strokeWidth={3} />
                   </button>
@@ -96,12 +98,12 @@ export default function CaptureStep() {
           )}
 
           {photos.length > 0 && (
-            <Btn tone="white" size="sm" className="mt-2" onClick={clearPhotos}>
+            <Btn tone="paper" size="sm" className="mt-3" onClick={clearPhotos}>
               <Ico name="rotate-ccw" />
               Start the roll over
             </Btn>
           )}
-        </div>
+        </Window>
 
         <div
           onDragOver={(event) => {
@@ -114,10 +116,18 @@ export default function CaptureStep() {
             setDragOver(false)
             void ingest(event.dataTransfer.files)
           }}
-          className={`cute-card rounded-blob p-4 transition sm:p-5 ${dragOver ? 'ring-4 ring-lav-300' : ''}`}
+          className={`window overflow-hidden p-0 transition ${dragOver ? 'translate-x-0.5 translate-y-0.5 shadow-toy-xs' : ''}`}
         >
-          <h2 className="font-display text-lg font-bold">Or bring your own</h2>
-          <p className="mt-1 text-sm font-semibold text-ink-soft">
+          <div className="window-bar bg-mint-300">
+            <Ico name="upload" className="size-4" />
+            <h2 className="text-sm font-bold">Or bring your own</h2>
+            <span className="ml-auto flex items-center gap-1">
+              <span className="win-dot" aria-hidden />
+              <span className="win-dot win-dot-butter" aria-hidden />
+            </span>
+          </div>
+          <div className="p-4 sm:p-5">
+          <p className="text-sm font-semibold text-ink-soft">
             Drop photos here or pick them from your device. They never leave this browser.
           </p>
 
@@ -151,10 +161,11 @@ export default function CaptureStep() {
           </div>
 
           {full && (
-            <p className="mt-3 rounded-2xl bg-butter-100 px-3 py-2 text-sm font-bold text-ink">
+            <p className="well mt-3 px-3 py-2 text-sm font-bold text-ink">
               {MAX_PHOTOS} photos is the limit. Remove one to add another.
             </p>
           )}
+          </div>
         </div>
       </div>
     </div>

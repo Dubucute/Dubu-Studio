@@ -41,21 +41,23 @@ export default function BoothApp() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b border-white/60 bg-white/70 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
-          <Mascot className="size-10 shrink-0 sm:size-11" />
+      <header className="sticky top-0 z-30 border-b-2 border-ink bg-lav-400">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-2 sm:px-6">
+          <span className="chunky grid size-11 shrink-0 place-items-center rounded-xl border-2 border-ink bg-paper shadow-toy-xs">
+            <Mascot className="size-9" />
+          </span>
           <div className="min-w-0">
             <h1 className="font-display text-xl leading-tight font-bold text-ink sm:text-2xl">
-              Peachy Studio
+              Dubu Studio
             </h1>
-            <p className="truncate text-xs font-semibold text-ink-soft sm:text-sm">
+            <p className="truncate text-xs font-bold text-ink/80 sm:text-sm">
               Photo strips made in your browser
             </p>
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            <span className="hidden items-center gap-1.5 rounded-full bg-mint-100 px-3 py-1.5 text-xs font-bold text-ink sm:inline-flex">
-              <Ico name="lock" className="size-3.5 text-mint-400" />
+          <div className="ml-auto flex items-center gap-1.5">
+            <span className="hidden items-center gap-1.5 rounded-full border-2 border-ink bg-paper px-3 py-1 text-xs font-bold text-ink sm:inline-flex">
+              <Ico name="lock" className="size-3.5" />
               On-device only
             </span>
             <button
@@ -63,9 +65,11 @@ export default function BoothApp() {
               onClick={toggleSound}
               aria-pressed={sound}
               aria-label={sound ? 'Mute sounds' : 'Turn sounds on'}
-              className="chunky grid size-10 place-items-center rounded-full bg-white text-ink"
+              className={`chunky grid size-9 place-items-center rounded-lg border-2 border-ink shadow-toy-xs ${
+                sound ? 'win-dot-butter text-ink' : 'bg-paper text-ink-faint'
+              }`}
             >
-              <Ico name={sound ? 'volume-on' : 'volume-off'} />
+              <Ico name={sound ? 'volume-on' : 'volume-off'} className="size-4" />
             </button>
           </div>
         </div>
@@ -85,9 +89,9 @@ export default function BoothApp() {
         </div>
       </main>
 
-      <footer className="sticky bottom-0 z-30 border-t border-white/60 bg-white/85 backdrop-blur-md">
+      <footer className="sticky bottom-0 z-30 border-t-2 border-ink bg-paper/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
-          <Btn tone="white" onClick={back} disabled={step === 'capture'}>
+          <Btn tone="paper" onClick={back} disabled={step === 'capture'}>
             <Ico name="arrow-left" />
             Back
           </Btn>

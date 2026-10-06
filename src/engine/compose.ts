@@ -35,7 +35,13 @@ export const layoutFor = (design: StripDesign, photoCount: number) =>
   selectableLayouts(photoCount)[0] ??
   columnLayout(photoCount)
 
-export function renderStrip(design: StripDesign, photos: Photo[], width: number): HTMLCanvasElement {
+export function renderStrip(
+  design: StripDesign,
+  photos: Photo[],
+  width: number,
+  /** The live preview draws stickers as interactive DOM instead, so it opts out here. */
+  { withStickers = true }: { withStickers?: boolean } = {},
+): HTMLCanvasElement {
   const layout = layoutFor(design, photos.length)
   const metrics = stripMetrics(layout)
 
@@ -114,8 +120,9 @@ export function renderStrip(design: StripDesign, photos: Photo[], width: number)
     u,
   )
 
-  // 5. Stickers last: they float over everything, edge to edge.
-  for (const sticker of design.stickers) paintSticker(ctx, sticker, u)
+  // 5. Stickers are flattened last in the exported artwork. The preview skips this step —
+  // its stickers are DOM elements layered on top, so drawing them here too would show two.
+  if (withStickers) for (const sticker of design.stickers) paintSticker(ctx, sticker, { width: W, height: H })
 
   return canvas
 }

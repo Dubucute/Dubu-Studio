@@ -86,8 +86,18 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
   }, [count, mirror, onCapture, later])
 
   return (
-    <div className="relative">
-      <div className="relative aspect-3/4 w-full overflow-hidden rounded-blob bg-ink/90 shadow-[0_24px_50px_-26px_rgba(69,52,88,0.7)]">
+    <div className="window overflow-hidden">
+      <div className="window-bar">
+        <Ico name="camera" className="size-4" />
+        <span className="text-sm font-bold">Camera</span>
+        <span className="ml-auto flex items-center gap-1">
+          <span className="win-dot" aria-hidden />
+          <span className="win-dot win-dot-butter" aria-hidden />
+        </span>
+      </div>
+
+      <div className="p-3 sm:p-4">
+      <div className="relative aspect-3/4 w-full overflow-hidden rounded-lg border-2 border-ink bg-ink/90">
         <video
           ref={videoRef}
           playsInline
@@ -109,11 +119,11 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
         {status === 'error' && (
           <div className="absolute inset-0 grid place-items-center bg-blush-100/95 p-5 text-center">
             <div className="max-w-xs">
-              <span aria-hidden className="mx-auto grid size-12 place-items-center rounded-full bg-white text-lav-400 shadow-cute">
+              <span aria-hidden className="mx-auto grid size-12 place-items-center rounded-xl border-2 border-ink bg-paper text-mauve-500 shadow-toy-xs">
                 <Ico name="circle-alert" className="size-6" />
               </span>
               <p className="mt-3 font-display text-base font-bold text-ink">{error}</p>
-              <Btn tone="white" size="sm" className="mt-3" onClick={() => void start()}>
+              <Btn tone="paper" size="sm" className="mt-3" onClick={() => void start()}>
                 <Ico name="rotate-ccw" />
                 Try the camera again
               </Btn>
@@ -153,16 +163,18 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-4">
+      <div className="mt-4 flex items-center justify-center gap-3">
         <button
           type="button"
           onClick={runCountdown}
           disabled={status !== 'live' || count !== null}
           aria-label="Take a photo"
-          className="chunky grid size-20 place-items-center rounded-full border-4 border-white bg-blush-300 text-ink shadow-[0_10px_0_0_rgba(69,52,88,0.2)] disabled:opacity-40 sm:size-24"
+          className="chunky grid size-20 place-items-center rounded-full border-[3px] border-ink bg-blush-300 text-ink shadow-toy disabled:opacity-40 sm:size-24"
         >
           <Ico name="camera" className="size-9 sm:size-10" strokeWidth={2.2} />
         </button>
+        <span className="hidden font-display text-sm font-bold text-ink-soft sm:block">Say cheese</span>
+      </div>
       </div>
     </div>
   )

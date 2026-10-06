@@ -19,7 +19,7 @@ export default function TextEditor() {
   const toggleDate = useBoothStore((s) => s.toggleDate)
 
   const field =
-    'w-full rounded-2xl border-2 border-transparent bg-white px-4 py-3 font-bold text-ink placeholder:font-semibold placeholder:text-ink-faint focus:border-lav-300 focus:outline-none'
+    'w-full rounded-xl border-2 border-ink/40 bg-paper px-4 py-3 font-bold text-ink shadow-toy-xs placeholder:font-semibold placeholder:text-ink-faint focus:border-ink focus:outline-none'
 
   return (
     <div className="space-y-3">
@@ -40,7 +40,7 @@ export default function TextEditor() {
             key={idea}
             type="button"
             onClick={() => setCaption(idea)}
-            className="chunky min-h-9 rounded-full bg-blush-50 px-3 py-2 text-xs font-bold text-ink-soft hover:bg-blush-100"
+            className="chunky min-h-9 rounded-full border-2 border-ink/40 bg-paper px-3 py-2 text-xs font-bold text-ink-soft shadow-toy-xs hover:border-ink hover:text-ink"
           >
             {idea}
           </button>
@@ -62,7 +62,7 @@ export default function TextEditor() {
         Stamp the date
       </Switch>
 
-      <p className="flex items-start gap-2 rounded-2xl bg-mint-100 px-3 py-2 text-xs font-semibold text-ink-soft">
+      <p className="well flex items-start gap-2 px-3 py-2 text-xs font-semibold text-ink-soft">
         <Ico name="lock" className="mt-0.5 size-3.5 shrink-0 text-mint-400" />
         Stamps are drawn straight onto the image in your browser.
       </p>

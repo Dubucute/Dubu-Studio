@@ -18,10 +18,10 @@ const nunito = Nunito({
 })
 
 export const metadata: Metadata = {
-  title: 'Peachy Studio — cute photo strips in your browser',
+  title: 'Dubu Studio — cute photo strips in your browser',
   description:
     'Snap, style and download a photo strip. Everything happens in your browser: no sign-up, no uploads, no watermark.',
-  applicationName: 'Peachy Studio',
+  applicationName: 'Dubu Studio',
 }
 
 export const viewport: Viewport = {

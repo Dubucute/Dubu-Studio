@@ -8,7 +8,7 @@
  * API because that API has no touch support on phones — the platform most likely to be holding
  * a camera at a photobooth.
  */
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { playCue } from '@/engine/audio'
 import { STICKER_GROUPS, stickerById, stickersInGroup } from '@/core/stickers'
 import { useBoothStore } from '@/state/useBoothStore'
@@ -24,18 +24,25 @@ export default function StickerTray({ stripRef }: { stripRef: React.RefObject<HT
   const addSticker = useBoothStore((s) => s.addSticker)
   const stickerCount = useBoothStore((s) => s.design.stickers.length)
   const [ghost, setGhost] = useState<{ defId: string; x: number; y: number } | null>(null)
+  /** Set when a drag just placed a sticker, so the click that follows it is ignored. */
+  const suppressClick = useRef(false)
 
-  const place = (defId: string, clientX: number, clientY: number) => {
+  const placeAt = (defId: string, clientX: number, clientY: number) => {
     const rect = stripRef.current?.getBoundingClientRect()
-    if (!rect) return
-    const inside =
-      clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom
-    if (inside) {
+    if (rect && clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
       addSticker(defId, (clientX - rect.left) / rect.width, (clientY - rect.top) / rect.height)
     } else {
       const [x, y] = dropSpot(stickerCount)
       addSticker(defId, x, y)
     }
+    playCue('pop')
+  }
+
+  /** Tap (mouse, touch, or keyboard Enter) drops the sticker at the default spot. */
+  const addToStrip = (defId: string) => {
+    if (suppressClick.current) return
+    const [x, y] = dropSpot(stickerCount)
+    addSticker(defId, x, y)
     playCue('pop')
   }
 
@@ -54,13 +61,14 @@ export default function StickerTray({ stripRef }: { stripRef: React.RefObject<HT
       window.removeEventListener('pointerup', end)
       window.removeEventListener('pointercancel', end)
       setGhost(null)
-      // A tap (no movement) drops the sticker at the default spot; a drop uses the pointer.
-      if (!dragged && Math.hypot(e.clientX - originX, e.clientY - originY) <= 8) {
-        const [x, y] = dropSpot(stickerCount)
-        addSticker(defId, x, y)
-        playCue('pop')
-      } else {
-        place(defId, e.clientX, e.clientY)
+      if (dragged) {
+        placeAt(defId, e.clientX, e.clientY)
+        // The browser fires a click right after a pointer drag that stayed on the button;
+        // without this guard a drop would add a second sticker.
+        suppressClick.current = true
+        window.setTimeout(() => {
+          suppressClick.current = false
+        }, 0)
       }
     }
     window.addEventListener('pointermove', move)
@@ -82,11 +90,9 @@ export default function StickerTray({ stripRef }: { stripRef: React.RefObject<HT
                 type="button"
                 aria-label={`Add ${def.name} sticker`}
                 title={def.name}
-                onPointerDown={(e) => {
-                  e.preventDefault()
-                  startDrag(def.id, e)
-                }}
-                className="chunky grid size-11 shrink-0 place-items-center rounded-2xl border-2 border-transparent bg-white hover:border-lav-200"
+                onPointerDown={(e) => startDrag(def.id, e)}
+                onClick={() => addToStrip(def.id)}
+                className="chunky no-touch-scroll grid size-11 shrink-0 touch-none select-none place-items-center rounded-xl border-2 border-ink/40 bg-paper shadow-toy-xs hover:border-ink"
               >
                 <StickerIcon def={def} color={def.color} className="size-8" shadow={false} />
               </button>

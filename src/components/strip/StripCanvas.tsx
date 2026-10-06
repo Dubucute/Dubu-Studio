@@ -59,7 +59,9 @@ export default function StripCanvas({
     (width: number) => {
       const canvas = canvasRef.current
       if (!canvas) return
-      const rendered = renderStrip(design, photos, width)
+      // Stickers are excluded: they are real DOM buttons layered over this canvas, and
+      // painting them here as well made a dragged sticker appear twice.
+      const rendered = renderStrip(design, photos, width, { withStickers: false })
       canvas.width = rendered.width
       canvas.height = rendered.height
       const ctx = canvas.getContext('2d')
@@ -172,7 +174,7 @@ export default function StripCanvas({
       onPointerDown={(event) => {
         if (interactive && event.target === event.currentTarget) onSelect?.(null)
       }}
-      className={`strip-frame relative mx-auto w-full overflow-hidden rounded-2xl bg-white/70 shadow-[0_18px_40px_-22px_rgba(69,52,88,0.55)] sm:rounded-[1.75rem] ${className}`}
+      className={`strip-frame relative mx-auto w-full overflow-hidden rounded-lg border-2 border-ink bg-screen ${className}`}
       style={{
         aspectRatio: `1 / ${metrics.height}`,
         // Because height = width * ratio, capping the width by (allowed height / ratio)

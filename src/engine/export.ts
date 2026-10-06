@@ -36,7 +36,7 @@ export async function exportStripPng(
 
 export const suggestedFilename = (date = new Date()): string => {
   const stamp = date.toISOString().slice(0, 10)
-  return `peachy-strip-${stamp}.png`
+  return `dubu-strip-${stamp}.png`
 }
 
 export function downloadBlob(blob: Blob, filename: string) {

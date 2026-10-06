@@ -8,43 +8,57 @@
 }
 
 @theme {
-  /* Soft pastels */
+  /* Toy-OS palette, read off the reference board: pink desk, cream windows, plum ink
+     outlines, lavender + raspberry title bars, butter accents, hard pink drop shadows. */
+  --color-ink: #43223f;
+  --color-ink-soft: #7c4e70;
+  --color-ink-faint: #a8839f;
+
+  --color-shell: #f7cbe3;
+  --color-paper: #fff8fb;
+  --color-panel: #ffeaf4;
+  --color-screen: #fff4f9;
+
   --color-blush-50: #fff6fa;
-  --color-blush-100: #ffeaf2;
-  --color-blush-200: #ffd6e6;
-  --color-blush-300: #ffb3cd;
-  --color-blush-400: #ff8fb8;
+  --color-blush-100: #ffe7f2;
+  --color-blush-200: #ffd1e6;
+  --color-blush-300: #ffaad0;
+  --color-blush-400: #f97bb4;
 
-  --color-lav-100: #f4efff;
+  --color-lav-100: #f3edff;
   --color-lav-200: #e2d6ff;
-  --color-lav-300: #cbb6ff;
-  --color-lav-400: #ae90ff;
+  --color-lav-300: #c6b2ff;
+  --color-lav-400: #a78bfa;
+  --color-lav-500: #8b6cf0;
 
-  --color-mint-100: #ecfbf5;
-  --color-mint-200: #d3f5e7;
-  --color-mint-300: #93e3c8;
-  --color-mint-400: #5ccfae;
+  --color-mauve-300: #e08bb0;
+  --color-mauve-400: #d76a97;
+  --color-mauve-500: #c14a7d;
 
-  --color-butter-100: #fffbe9;
-  --color-butter-200: #fff0bf;
-  --color-butter-300: #ffe28a;
-  --color-butter-400: #ffcf4d;
+  --color-mint-100: #eafaf2;
+  --color-mint-200: #cdf2e2;
+  --color-mint-300: #8fe0c3;
+  --color-mint-400: #4fc9a3;
 
-  --color-sky-100: #f1f8ff;
-  --color-sky-200: #d6ecff;
-  --color-sky-300: #a5d6ff;
-  --color-sky-400: #74baff;
+  --color-butter-100: #fff8e1;
+  --color-butter-200: #ffedb8;
+  --color-butter-300: #ffe08a;
+  --color-butter-400: #f8c94b;
 
-  /* High-contrast friendly text colours (all pass AA on the pastels above) */
-  --color-ink: #453458;
-  --color-ink-soft: #6e5c82;
-  --color-ink-faint: #93859f;
+  --color-sky-100: #ecf7ff;
+  --color-sky-200: #d1ebff;
+  --color-sky-300: #a3d5ff;
+  --color-sky-400: #6cb6f5;
 
-  --radius-blob: 2rem;
-  --radius-blob-sm: 1.25rem;
+  --radius-blob: 1rem;
+  --radius-blob-sm: 0.625rem;
 
-  --shadow-cute: 0 20px 45px -24px rgba(69, 52, 88, 0.5);
-  --shadow-pop: 0 6px 0 0 rgba(69, 52, 88, 0.15);
+  /* Hard, flat shadows with no blur — the reference's sticker-like depth. */
+  --shadow-toy: 5px 6px 0 0 #eba9cb;
+  --shadow-toy-sm: 3px 4px 0 0 #eba9cb;
+  --shadow-toy-xs: 2px 2px 0 0 #eba9cb;
+  --shadow-pressed: 1px 1px 0 0 #eba9cb;
+  --shadow-cute: 6px 7px 0 0 #eba9cb;
 
   --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-wiggle: wiggle 0.5s ease-in-out;
@@ -92,35 +106,32 @@
   }
 
   body {
-    /* A soft pastel backdrop so the whole app feels like one big sticker. */
-    background-color: var(--color-blush-50);
+    /* The pink desk: a few big soft blobs, nothing else. */
+    background-color: var(--color-shell);
     background-image:
-      radial-gradient(58rem 34rem at 8% -10%, var(--color-lav-200) 0%, transparent 60%),
-      radial-gradient(46rem 30rem at 100% 0%, var(--color-blush-200) 0%, transparent 55%),
-      radial-gradient(52rem 34rem at 50% 110%, var(--color-mint-200) 0%, transparent 60%);
+      radial-gradient(42rem 30rem at 10% 4%, #ffe1f0 0%, transparent 58%),
+      radial-gradient(36rem 26rem at 94% 8%, #f2c9ff 0%, transparent 55%),
+      radial-gradient(52rem 32rem at 44% 112%, #ffd6ea 0%, transparent 62%);
     background-attachment: fixed;
     color: var(--color-ink);
     min-height: 100dvh;
-    /* Stop iOS from flashing grey when a drag starts on a photo. */
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Never let a horizontal drag on the strip scroll the page sideways. */
   .no-touch-scroll {
     touch-action: none;
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-lav-400);
-    outline-offset: 3px;
-    border-radius: 1rem;
+    outline: 3px solid var(--color-lav-500);
+    outline-offset: 2px;
+    border-radius: 0.75rem;
   }
 
   ::selection {
     background: var(--color-blush-200);
   }
 
-  /* Inputs stay at 16px so iOS Safari never zooms in on focus. */
   input,
   textarea,
   select {
@@ -129,32 +140,57 @@
 }
 
 @layer utilities {
-  /* Chunky, toy-like press feel for every interactive surface. */
-  .chunky {
-    box-shadow: var(--shadow-pop);
-    transition:
-      transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 0.15s ease,
-      background-color 0.2s ease;
-  }
-  .chunky:hover {
-    transform: translateY(-2px);
-  }
-  .chunky:active {
-    transform: translateY(3px);
-    box-shadow: 0 3px 0 0 rgba(69, 52, 88, 0.16);
+  /* The one framing move in this design: a cream window with a plum outline and a hard shadow. */
+  .window {
+    background: var(--color-paper);
+    border: 2px solid var(--color-ink);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-toy);
   }
 
-  .cute-card {
-    background: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow-cute);
+  .window-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.55rem;
+    background: var(--color-lav-400);
+    border-bottom: 2px solid var(--color-ink);
+    border-radius: 0.75rem 0.75rem 0 0;
+    color: var(--color-ink);
+  }
+
+  .window-bar-accent {
+    background: var(--color-mauve-500);
+    color: #fff;
+  }
+
+  /* The little rounded-square window controls. */
+  .win-dot {
+    display: grid;
+    place-items: center;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--color-ink);
+    border-radius: 0.3rem;
+    background: #fff;
+    flex: none;
+  }
+
+  .win-dot-butter {
+    background: var(--color-butter-300);
+  }
+
+  /* Recessed area inside a window (canvas screens, fields). */
+  .well {
+    background: #fff;
+    border: 2px solid var(--color-ink);
+    border-radius: 0.75rem;
   }
 
   /*
    * How much height a photo strip may take. On phones the strip is the hero and gets the full
-   * column width (the page scrolls); on desktop it sits in a sticky column, so it is capped to
-   * the viewport. `StripCanvas` turns this into a max-width via the strip's aspect ratio.
+   * column width (the page scrolls); on larger screens it sits in a sticky column, so it is
+   * capped to the viewport. StripCanvas turns this into a max-width via the strip's ratio.
    */
   .strip-frame {
     --strip-max-h: 200vh;
@@ -170,13 +206,27 @@
     }
   }
 
-  /* Confetti pieces dropped by the shutter celebration. */
+  /* Press feel: the window lifts, then thunks down onto its shadow. */
+  .chunky {
+    transition:
+      transform 0.13s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.13s ease,
+      background-color 0.2s ease;
+  }
+  .chunky:hover {
+    transform: translate(-1px, -1px);
+  }
+  .chunky:active {
+    transform: translate(2px, 3px);
+    box-shadow: var(--shadow-pressed) !important;
+  }
+
+  /* Confetti pieces dropped by the save celebration. */
   .confetti-bit {
     position: absolute;
     top: 0;
-    width: 10px;
-    height: 14px;
     border-radius: 3px;
+    border: 2px solid var(--color-ink);
     animation: var(--animate-rain);
   }
 }

@@ -1,4 +1,4 @@
-# Peachy Studio
+# Dubu Studio
 
 A cute, privacy-first photobooth that runs entirely in the browser. Snap or upload photos, style
 them, and download a high-resolution PNG strip — no sign-up, no uploads, no watermark.
