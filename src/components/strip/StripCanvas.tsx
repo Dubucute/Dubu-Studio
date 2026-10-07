@@ -16,6 +16,7 @@ import { stripMetrics } from '@/core/layouts'
 import { stickerById } from '@/core/stickers'
 import { ensureImages } from '@/engine/photo'
 import { useBoothStore } from '@/state/useBoothStore'
+import { useDragSwap } from './useDragSwap'
 import StickerIcon from './StickerIcon'
 import type { Photo, StripDesign } from '@/core/types'
 
@@ -47,12 +48,52 @@ export default function StripCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const moveSticker = useBoothStore((s) => s.moveSticker)
   const removeSticker = useBoothStore((s) => s.removeSticker)
+  const swapPhotos = useBoothStore((s) => s.swapPhotos)
   const localRef = useRef<HTMLDivElement>(null)
   const box = boxRef ?? localRef
   const [renderWidth, setRenderWidth] = useState(PREVIEW_WIDTH)
 
   const layout = layoutFor(design, photos.length)
   const metrics = stripMetrics(layout)
+
+  /**
+   * Drag a photo cell onto another and the two photos trade places.
+   * Hit-testing is geometric because the cells live inside one canvas, not in the DOM.
+   */
+  const findCellAt = useCallback(
+    (clientX: number, clientY: number): string | null => {
+      const node = box.current
+      if (!node) return null
+      const rect = node.getBoundingClientRect()
+      if (rect.width <= 0 || rect.height <= 0) return null
+      // Normalized point in strip-width units (y also spans `metrics.height` such units).
+      const nx = (clientX - rect.left) / rect.width
+      const ny = ((clientY - rect.top) / rect.height) * metrics.height
+      const index = metrics.cells.findIndex(
+        (c) => nx >= c.x && nx <= c.x + c.w && ny >= c.y && ny <= c.y + c.h,
+      )
+      return index >= 0 ? photos[index]?.id ?? null : null
+    },
+    // `box` is a stable ref object; geometry and photos are what can change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [metrics, photos],
+  )
+
+  const drag = useDragSwap({ onSwap: swapPhotos, findAt: findCellAt })
+
+  /** Cell box as CSS percentages, for the drag feedback overlay. */
+  const overlayFor = (id: string | null) => {
+    if (!id) return null
+    const index = photos.findIndex((p) => p.id === id)
+    const cell = index >= 0 ? metrics.cells[index] : undefined
+    if (!cell) return null
+    return {
+      left: `${cell.x * 100}%`,
+      top: `${(cell.y / metrics.height) * 100}%`,
+      width: `${cell.w * 100}%`,
+      height: `${(cell.h / metrics.height) * 100}%`,
+    }
+  }
 
   /** Paint through the shared engine renderer, then blit into the visible canvas. */
   const paint = useCallback(
@@ -172,9 +213,27 @@ export default function StripCanvas({
     <div
       ref={box}
       onPointerDown={(event) => {
-        if (interactive && event.target === event.currentTarget) onSelect?.(null)
+        if (!interactive) return
+        // Sticker buttons manage their own drags; everything else is photo territory.
+        if ((event.target as HTMLElement).closest('button')) return
+        onSelect?.(null)
+        const id = findCellAt(event.clientX, event.clientY)
+        if (!id) return
+        drag.start(id)
+        // Keep receiving moves outside the strip. A synthetic or already-lifted pointer
+        // can make this throw — the drag itself must not depend on it.
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId)
+        } catch {
+          /* pointer capture unavailable; move/up still land on this element */
+        }
       }}
-      className={`strip-frame relative mx-auto w-full overflow-hidden rounded-lg border-2 border-ink bg-screen ${className}`}
+      onPointerMove={(event) => drag.move(event.clientX, event.clientY)}
+      onPointerUp={drag.end}
+      onPointerCancel={drag.cancel}
+      className={`strip-frame relative mx-auto w-full overflow-hidden rounded-lg border-2 border-ink bg-screen ${
+        interactive ? 'no-touch-scroll' : ''
+      } ${className}`}
       style={{
         aspectRatio: `1 / ${metrics.height}`,
         // Because height = width * ratio, capping the width by (allowed height / ratio)
@@ -183,6 +242,22 @@ export default function StripCanvas({
       }}
     >
       <canvas ref={canvasRef} role="img" aria-label={label} className="block h-full w-full" />
+
+      {/* Drag feedback: a soft ghost on the photo being dragged, a hard ring on its target. */}
+      {overlayFor(drag.draggingId) && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute rounded-md border-2 border-dashed border-ink/70 bg-white/45"
+          style={overlayFor(drag.draggingId) ?? undefined}
+        />
+      )}
+      {overlayFor(drag.overId) && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute rounded-md border-[3px] border-mauve-500 bg-white/30"
+          style={overlayFor(drag.overId) ?? undefined}
+        />
+      )}
 
       {design.stickers.map((sticker) => {
         const def = stickerById(sticker.defId)

@@ -5,7 +5,8 @@
  *
  * Each one is a thin view — read the current id from the store, write the new one back —
  * so the three of them can share a file without pretending to be one component. All the
- * data (presets) and all the policy (which layouts are legal) come from `core/`.
+ * data (presets) and all the policy (which layouts are legal) come from `core/`. There
+ * is no paper picker on purpose: paper belongs to the frame (`core/frames.ts`).
  */
 import { FILTERS } from '@/core/filters'
 import { FRAMES } from '@/core/frames'

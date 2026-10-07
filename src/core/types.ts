@@ -50,6 +50,30 @@ export interface StampText {
   date: string
 }
 
+/** The two ink colours the footer stamp paints with: caption, then the place/date row. */
+export interface StampInk {
+  caption: string
+  meta: string
+}
+
+/**
+ * The paper background the photos sit on: a two-stop vertical gradient plus a speckle
+ * accent. Each frame carries the sheet that matches its border (`core/frames.ts`), so
+ * background and frame are always chosen together.
+ */
+export interface Paper {
+  /** [top, bottom] gradient stops. Pale sheets pair with the classic plum stamp ink. */
+  colors: [string, string]
+  /** Accent colour for the scattered paper speckles. */
+  speckle: string
+  /**
+   * Stamp ink override for the dark family of sheets — pale plum text vanishes on a
+   * night sheet, so the sheet that needs light type says so here. Omitted means the
+   * stamp's classic plum pair.
+   */
+  ink?: StampInk
+}
+
 /** Everything about how a strip looks. The photos themselves live beside it. */
 export interface StripDesign {
   filterId: string

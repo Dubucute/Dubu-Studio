@@ -18,6 +18,8 @@
   --color-paper: #fff8fb;
   --color-panel: #ffeaf4;
   --color-screen: #fff4f9;
+  /* Recessed white areas (.well, .win-dot); re-skins near-black in dark mode. */
+  --color-well: #ffffff;
 
   --color-blush-50: #fff6fa;
   --color-blush-100: #ffe7f2;
@@ -64,9 +66,78 @@
   --animate-wiggle: wiggle 0.5s ease-in-out;
   --animate-float: float 5s ease-in-out infinite;
   --animate-blink: blink 6s ease-in-out infinite;
-  --animate-shutter: shutter 0.28s ease-out;
+  /* `forwards` matters: the span stays mounted as the flash element, so the
+     animation must END on opacity 0 — without it the blink freezes as a solid
+     white sheet over the video after the first capture. */
+  --animate-shutter: shutter 0.28s ease-out forwards;
   --animate-rain: rain 1.7s linear forwards;
   --animate-rise: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/*
+ * Dark Toy-OS: the same layout in plum night — cream outlines on deep plum, the same
+ * hard shadows pressed darker. Every utility reads the colour and shadow theme variables
+ * (Tailwind v4 emits var() references), so this one block re-skins the entire chrome.
+ * The .dark class is applied before first paint by the script in state/theme.ts.
+ */
+html.dark {
+  color-scheme: dark;
+
+  --color-ink: #f3dfef;
+  --color-ink-soft: #d5b3cf;
+  --color-ink-faint: #a17b9d;
+
+  --color-shell: #23132f;
+  --color-paper: #37204a;
+  --color-panel: #42285a;
+  --color-screen: #2a1638;
+  --color-well: #1c0e2b;
+
+  --color-blush-50: #3c2347;
+  --color-blush-100: #4a2b56;
+  --color-blush-200: #6a3a72;
+  --color-blush-300: #8c4a7d;
+  --color-blush-400: #ff8fc4;
+
+  --color-lav-100: #322454;
+  --color-lav-200: #443163;
+  --color-lav-300: #57417e;
+  --color-lav-400: #6f57ab;
+  --color-lav-500: #b7a2ff;
+
+  --color-mauve-300: #7e4a67;
+  --color-mauve-400: #95527a;
+  --color-mauve-500: #c25e93;
+
+  --color-mint-100: #1c352f;
+  --color-mint-200: #24443c;
+  --color-mint-300: #2f6353;
+  --color-mint-400: #62dab3;
+
+  --color-butter-100: #3f3322;
+  --color-butter-200: #52432a;
+  --color-butter-300: #6a5434;
+  --color-butter-400: #f8c94b;
+
+  --color-sky-100: #1c2c42;
+  --color-sky-200: #253c58;
+  --color-sky-300: #33567d;
+  --color-sky-400: #7cc0f8;
+
+  --shadow-toy: 5px 6px 0 0 #120a1a;
+  --shadow-toy-sm: 3px 4px 0 0 #120a1a;
+  --shadow-toy-xs: 2px 2px 0 0 #120a1a;
+  --shadow-pressed: 1px 1px 0 0 #120a1a;
+  --shadow-cute: 6px 7px 0 0 #120a1a;
+}
+
+html.dark body {
+  /* The same three desk blobs, tinted for the night shell. */
+  background-color: var(--color-shell);
+  background-image:
+    radial-gradient(42rem 30rem at 10% 4%, rgba(151, 55, 146, 0.32) 0%, transparent 58%),
+    radial-gradient(36rem 26rem at 94% 8%, rgba(99, 54, 178, 0.3) 0%, transparent 55%),
+    radial-gradient(52rem 32rem at 44% 112%, rgba(163, 62, 138, 0.26) 0%, transparent 62%);
 }
 
 @keyframes pop {
@@ -172,7 +243,7 @@
     height: 1rem;
     border: 2px solid var(--color-ink);
     border-radius: 0.3rem;
-    background: #fff;
+    background: var(--color-well);
     flex: none;
   }
 
@@ -182,7 +253,7 @@
 
   /* Recessed area inside a window (canvas screens, fields). */
   .well {
-    background: #fff;
+    background: var(--color-well);
     border: 2px solid var(--color-ink);
     border-radius: 0.75rem;
   }

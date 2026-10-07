@@ -71,7 +71,14 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
 
     setCount(COUNT_FROM)
     playCue('tick')
-    for (let n = COUNT_FROM - 1; n >= 1; n--) later(() => playCue('tick'), n * 1000)
+    // Each tick moves the *displayed* number and chirps together — scheduling one
+    // without the other is how the countdown used to sit frozen on "3".
+    for (let n = COUNT_FROM - 1; n >= 1; n--) {
+      later(() => {
+        setCount(n)
+        playCue('tick')
+      }, (COUNT_FROM - n) * 1000)
+    }
 
     later(() => {
       void grabVideoFrame(video, { mirror }).then((photo) => {
@@ -102,7 +109,7 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
           ref={videoRef}
           playsInline
           muted
-          aria-label="Live camera preview"
+          aria-label="Camera preview"
           className="h-full w-full object-cover"
           style={{ filter: filterCss, transform: mirror ? 'scaleX(-1)' : undefined }}
         />
@@ -133,8 +140,8 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
 
         {status === 'live' && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-xs font-bold text-ink">
-            <span aria-hidden className="size-2 animate-ping rounded-full bg-blush-400" />
-            Live
+            <Ico name="lock" className="size-3.5" />
+            Photos are never stored
           </span>
         )}
 

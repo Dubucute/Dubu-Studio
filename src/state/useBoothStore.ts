@@ -33,6 +33,8 @@ interface BoothStore {
   addPhotos: (incoming: Photo[]) => void
   removePhoto: (id: string) => void
   clearPhotos: () => void
+  /** Swap two photos' positions in the roll, so the strip order changes too. */
+  swapPhotos: (a: string, b: string) => void
 
   setFilter: (id: string) => void
   setLayout: (id: string) => void
@@ -84,6 +86,16 @@ export const useBoothStore = create<BoothStore>((set, get) => ({
 
   clearPhotos: () =>
     set((s) => ({ photos: [], design: withLayout(s.design, 0) })),
+
+  swapPhotos: (a, b) =>
+    set((s) => {
+      const from = s.photos.findIndex((p) => p.id === a)
+      const to = s.photos.findIndex((p) => p.id === b)
+      if (from < 0 || to < 0 || from === to) return s
+      const photos = [...s.photos]
+      ;[photos[from], photos[to]] = [photos[to], photos[from]]
+      return { photos }
+    }),
 
   setFilter: (id) => set((s) => ({ design: { ...s.design, filterId: id } })),
   setLayout: (id) => set((s) => ({ design: { ...s.design, layoutId: id } })),

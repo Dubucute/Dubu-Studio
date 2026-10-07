@@ -7,7 +7,7 @@
  * All booth state comes from the store; the one thing the shell does is keep the sound
  * preference in sync with the audio engine.
  */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import CaptureStep from '@/components/steps/CaptureStep'
 import CustomizeStep from '@/components/steps/CustomizeStep'
 import ResultStep from '@/components/steps/ResultStep'
@@ -15,6 +15,7 @@ import { Btn, Mascot, Stepper } from '@/components/ui/kit'
 import { Ico } from '@/components/ui/icons'
 import { setSoundEnabled } from '@/engine/audio'
 import { useBoothStore } from '@/state/useBoothStore'
+import { hasStoredTheme, readTheme, writeTheme, type Theme } from '@/state/theme'
 import type { Step } from '@/core/types'
 
 const NEXT_LABEL: Record<Exclude<Step, 'result'>, string> = {
@@ -30,6 +31,26 @@ export default function BoothApp() {
   const goTo = useBoothStore((s) => s.goTo)
   const next = useBoothStore((s) => s.next)
   const back = useBoothStore((s) => s.back)
+
+  // The pre-paint script already set the class; adopt it, then follow the OS until the
+  // user picks explicitly (see state/theme.ts for the mechanism).
+  const [theme, setTheme] = useState<Theme>('light')
+  useEffect(() => {
+    setTheme(readTheme())
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = (event: MediaQueryListEvent) => {
+      if (hasStoredTheme()) return
+      document.documentElement.classList.toggle('dark', event.matches)
+      setTheme(event.matches ? 'dark' : 'light')
+    }
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  const toggleTheme = () => {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark'
+    writeTheme(next)
+    setTheme(next)
+  }
 
   // The audio engine holds the flag; the store holds the preference.
   useEffect(() => {
@@ -70,6 +91,17 @@ export default function BoothApp() {
               }`}
             >
               <Ico name={sound ? 'volume-on' : 'volume-off'} className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-pressed={theme === 'dark'}
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              className={`chunky grid size-9 place-items-center rounded-lg border-2 border-ink shadow-toy-xs ${
+                theme === 'dark' ? 'win-dot-butter text-ink' : 'bg-paper text-ink'
+              }`}
+            >
+              <Ico name={theme === 'dark' ? 'sun' : 'moon'} className="size-4" />
             </button>
           </div>
         </div>

@@ -1,13 +1,13 @@
 /**
- * Canvas painters for stickers and the text stamp.
+ * Canvas painters for stickers. The footer's text stamp has its own module: `footer.ts`.
  *
  * Stickers are drawn from the shape lists in `core/stickers.ts`. Because the very same list
  * is mapped to SVG for the on-screen preview, a sticker looks identical in the editor and in
  * the exported PNG — and on every platform, which is the whole point of not using emoji.
  */
 import { inkFor, stickerById, type Shape, type StickerDef } from '@/core/stickers'
-import type { StampText, Sticker } from '@/core/types'
-import { fontStack, roundRectPath, type Box } from './draw'
+import type { Sticker } from '@/core/types'
+import { roundRectPath, type Box } from './draw'
 
 /** Shapes are authored in a 100x100 box centred on (50, 50). */
 const BOX = 100
@@ -111,67 +111,4 @@ export function paintSticker(
     rotation: sticker.rotation,
     color: sticker.color,
   })
-}
-
-/** Fonts are read from the live DOM so canvas text matches the UI's rounded type. */
-const bodyFont = () => fontStack('body', '"Nunito", sans-serif')
-const displayFont = () => fontStack('.font-display', '"Quicksand", sans-serif')
-
-/** Shrink the font until the text fits `maxWidth`, so long captions never overflow. */
-function fitFont(ctx: CanvasRenderingContext2D, text: string, weight: string, size: number, maxWidth: number, family: string) {
-  let px = size
-  ctx.font = `${weight} ${px}px ${family}`
-  while (px > 8 && ctx.measureText(text).width > maxWidth) {
-    px -= Math.max(1, px * 0.04)
-    ctx.font = `${weight} ${px}px ${family}`
-  }
-  return px
-}
-
-/** Draw the caption / date / place stamp in the strip footer. */
-export function paintStamp(ctx: CanvasRenderingContext2D, text: StampText, box: Box, unit: number) {
-  const caption = text.caption.trim()
-  const place = text.place.trim()
-  const date = text.showDate ? text.date.trim() : ''
-  if (!caption && !place && !date) return
-
-  const maxWidth = box.w * 0.86
-  ctx.save()
-  ctx.textBaseline = 'middle'
-
-  if (caption) {
-    const size = fitFont(ctx, caption, '700', unit * 0.072, maxWidth, displayFont())
-    ctx.fillStyle = '#453458'
-    ctx.font = `700 ${size}px ${displayFont()}`
-    ctx.textAlign = 'center'
-    ctx.fillText(caption, box.x + box.w / 2, box.y + box.h * 0.38)
-  }
-
-  // Place sits left of centre and the date right of it — a photo-booth stamp rather than a
-  // single run-on string, so long place names never collide with the date.
-  const metaY = caption ? box.y + box.h * 0.76 : box.y + box.h * 0.5
-  const family = bodyFont()
-  const gap = unit * 0.05
-  let size = unit * 0.036
-  ctx.font = `600 ${size}px ${family}`
-  while (
-    size > 8 &&
-    (place ? ctx.measureText(place).width : 0) + (date ? ctx.measureText(date).width : 0) + gap > maxWidth
-  ) {
-    size -= Math.max(1, size * 0.04)
-    ctx.font = `600 ${size}px ${family}`
-  }
-  ctx.fillStyle = '#6E5C82'
-  const centreX = box.x + box.w / 2
-  if (place && date) {
-    ctx.textAlign = 'right'
-    ctx.fillText(place, centreX - gap / 2, metaY)
-    ctx.textAlign = 'left'
-    ctx.fillText(date, centreX + gap / 2, metaY)
-  } else {
-    ctx.textAlign = 'center'
-    ctx.fillText(place || date, centreX, metaY)
-  }
-
-  ctx.restore()
 }

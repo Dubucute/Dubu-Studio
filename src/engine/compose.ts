@@ -21,9 +21,10 @@ import {
   withClip,
   type Box,
 } from './draw'
-import { paintFrame } from './borders'
+import { frameDepthPx, paintFrame } from './borders'
+import { paintStamp } from './footer'
 import { imageFor } from './photo'
-import { paintStamp, paintSticker } from './stickers'
+import { paintSticker } from './stickers'
 
 /** Preview render width in CSS px; export is 4x that. */
 export const PREVIEW_WIDTH = 640
@@ -59,12 +60,14 @@ export function renderStrip(
   const u = W
   const strip: Box = { x: 0, y: 0, w: W, h: H }
 
-  // 1. Pastel paper + soft speckles.
-  paintPaper(ctx, strip, layout.paper, u * 0.03)
-  paintSpeckles(ctx, strip, u, photos.length)
-
-  // 2. Decorative border sits on the paper, under the photos.
-  paintFrame(ctx, frameById(design.frameId), strip, u, layout.paper[0])
+  // 1+2. Paper and frame are one choice: every frame carries the sheet that suits it,
+  // so the background is painted first and the decorative border — with its cut-outs
+  // showing paper through — sits on it, under the photos.
+  const frame = frameById(design.frameId)
+  const paper = frame.paper
+  paintPaper(ctx, strip, paper.colors, u * 0.03)
+  paintSpeckles(ctx, strip, u, photos.length, paper.speckle)
+  paintFrame(ctx, frame, strip, u, paper.colors[0])
 
   // 3. Photo cells.
   const radius = layout.radius * u
@@ -86,11 +89,11 @@ export function renderStrip(
     const image = photo ? imageFor(photo) : null
 
     if (polaroidFrame) {
-      // White card with a soft lift, so the frame reads as physical paper.
+      // White card with a hard, small lift so it reads as paper, not fog.
       ctx.save()
-      ctx.shadowColor = 'rgba(74, 59, 92, 0.22)'
-      ctx.shadowBlur = u * 0.035
-      ctx.shadowOffsetY = u * 0.012
+      ctx.shadowColor = 'rgba(74, 59, 92, 0.28)'
+      ctx.shadowBlur = u * 0.01
+      ctx.shadowOffsetY = u * 0.018
       fillRoundRect(ctx, cellBox, radius, '#FFFFFF')
       ctx.restore()
     }
@@ -112,13 +115,16 @@ export function renderStrip(
     }
   })
 
-  // 4. Caption / date stamp in the footer.
-  paintStamp(
-    ctx,
-    design.text,
-    { x: 0, y: metrics.footerTop * u, w: W, h: (metrics.height - metrics.footerTop) * u },
-    u,
-  )
+  // 4. Caption / date stamp in the footer. The stamp module owns how the frame's ring
+  // eats into the footer; the composer hands over the full footer rect and how deep
+  // the ring is, so the inset policy lives in exactly one place.
+  const footer: Box = {
+    x: 0,
+    y: metrics.footerTop * u,
+    w: W,
+    h: (metrics.height - metrics.footerTop) * u,
+  }
+  paintStamp(ctx, design.text, footer, u, frameDepthPx(frame, u), paper.ink)
 
   // 5. Stickers are flattened last in the exported artwork. The preview skips this step —
   // its stickers are DOM elements layered on top, so drawing them here too would show two.
@@ -128,7 +134,14 @@ export function renderStrip(
 }
 
 /** Deterministic paper texture — a redraw never reshuffles the dots. */
-function paintSpeckles(ctx: CanvasRenderingContext2D, strip: Box, u: number, seed: number) {
+function paintSpeckles(
+  ctx: CanvasRenderingContext2D,
+  strip: Box,
+  u: number,
+  seed: number,
+  /** Accent from the paper preset, so the dots match the sheet. */
+  accent: string,
+) {
   const rand = seededRandom(seed * 977 + 31)
   ctx.save()
   ctx.beginPath()
@@ -137,7 +150,7 @@ function paintSpeckles(ctx: CanvasRenderingContext2D, strip: Box, u: number, see
   for (let i = 0; i < 46; i++) {
     const r = u * (0.004 + rand() * 0.007)
     ctx.globalAlpha = 0.18 + rand() * 0.2
-    ctx.fillStyle = i % 5 === 0 ? '#FF9EC4' : '#FFFFFF'
+    ctx.fillStyle = i % 5 === 0 ? accent : '#FFFFFF'
     ctx.beginPath()
     ctx.arc(strip.x + rand() * strip.w, strip.y + rand() * strip.h, r, 0, Math.PI * 2)
     ctx.fill()

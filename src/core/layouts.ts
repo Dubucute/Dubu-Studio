@@ -27,9 +27,6 @@ export interface Layout {
   cell: 'ring' | 'polaroid'
   /** Polaroid frame thickness, as a fraction of the strip width. */
   frame: number
-  /** Pastel paper gradient behind the cells. */
-  paper: [string, string]
-  
 }
 
 /** One photo slot in strip-width units. */
@@ -67,7 +64,6 @@ export const LAYOUTS: Layout[] = [
     radius: 0.035,
     cell: 'ring',
     frame: 0,
-    paper: ['#FFF6FB', '#FFDCEA'],
   },
   {
     id: 'strip-4',
@@ -82,7 +78,6 @@ export const LAYOUTS: Layout[] = [
     radius: 0.035,
     cell: 'ring',
     frame: 0,
-    paper: ['#FFF3F7', '#FFD9E8'],
   },
   {
     id: 'strip-6',
@@ -97,7 +92,6 @@ export const LAYOUTS: Layout[] = [
     radius: 0.03,
     cell: 'ring',
     frame: 0,
-    paper: ['#F6F1FF', '#E2D6FF'],
   },
   {
     id: 'polaroid-4',
@@ -112,7 +106,6 @@ export const LAYOUTS: Layout[] = [
     radius: 0.012,
     cell: 'polaroid',
     frame: 0.055,
-    paper: ['#FFFBEF', '#FFF0C9'],
   },
   {
     id: 'grid-2',
@@ -127,7 +120,6 @@ export const LAYOUTS: Layout[] = [
     radius: 0.04,
     cell: 'ring',
     frame: 0,
-    paper: ['#F1FFFA', '#CDF3E4'],
   },
   {
     id: 'grid-4',
@@ -142,7 +134,6 @@ export const LAYOUTS: Layout[] = [
     radius: 0.035,
     cell: 'ring',
     frame: 0,
-    paper: ['#F0F9FF', '#CFEAFF'],
   },
   {
     id: 'grid-6',
@@ -157,7 +148,6 @@ export const LAYOUTS: Layout[] = [
     radius: 0.028,
     cell: 'ring',
     frame: 0,
-    paper: ['#FFF4FA', '#FFD6E8'],
   },
 ]
 
@@ -172,7 +162,6 @@ export const columnLayout = (photos: number): Layout => ({
   label: `Column ${photos}`,
   icon: 'rows',
   rows: photos,
-  paper: ['#FFF6FB', '#FFDCEA'],
 })
 
 /**

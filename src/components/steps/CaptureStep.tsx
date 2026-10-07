@@ -9,6 +9,7 @@
  */
 import { useRef, useState } from 'react'
 import CameraStage from '@/components/camera/CameraStage'
+import { useDragSwap } from '@/components/strip/useDragSwap'
 import { Btn, Switch, Window } from '@/components/ui/kit'
 import { Ico } from '@/components/ui/icons'
 import { filterById } from '@/core/filters'
@@ -25,8 +26,16 @@ export default function CaptureStep() {
   const addPhotos = useBoothStore((s) => s.addPhotos)
   const removePhoto = useBoothStore((s) => s.removePhoto)
   const clearPhotos = useBoothStore((s) => s.clearPhotos)
+  const swapPhotos = useBoothStore((s) => s.swapPhotos)
   const toggleMirror = useBoothStore((s) => s.toggleMirror)
   const toggleSound = useBoothStore((s) => s.toggleSound)
+
+  // Drag a thumbnail onto another and they trade places in the roll (and in the strip).
+  const drag = useDragSwap({
+    onSwap: swapPhotos,
+    findAt: (x, y) =>
+      (document.elementFromPoint(x, y)?.closest('[data-photo-id]') as HTMLElement | null)?.dataset.photoId ?? null,
+  })
 
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
@@ -75,15 +84,51 @@ export default function CaptureStep() {
               Nothing on the roll yet. Shoot a photo, upload some, or start with the samples.
             </p>
           ) : (
-            <ul className="flex gap-3 overflow-x-auto pb-2">
+            // The badges overhang the thumbnails by 8px; the scroll container's own
+            // padding is the room they need, so `overflow-x-auto` clips nothing.
+            <ul className="-mx-2.5 flex gap-3 overflow-x-auto px-2.5 pt-2.5 pb-2.5">
               {photos.map((photo, index) => (
-                <li key={photo.id} className="relative shrink-0">
+                <li
+                  key={photo.id}
+                  data-photo-id={photo.id}
+                  onPointerDown={(e) => {
+                    // The remove button must keep its own click; only empty thumb drags.
+                    if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return
+                    drag.start(photo.id)
+                    // Moves keep landing here even outside the thumb; synthetic pointers
+                    // can throw, and a drag must not depend on capture to work.
+                    try {
+                      e.currentTarget.setPointerCapture(e.pointerId)
+                    } catch {
+                      /* capture unavailable — pointerup still lands on this element */
+                    }
+                  }}
+                  onPointerMove={(e) => drag.move(e.clientX, e.clientY)}
+                  onPointerUp={drag.end}
+                  onPointerCancel={drag.cancel}
+                  className={`relative shrink-0 touch-none transition-transform ${
+                    drag.draggingId === photo.id
+                      ? 'scale-105 opacity-70'
+                      : drag.overId === photo.id
+                        ? '-translate-y-1 scale-110'
+                        : ''
+                  }`}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.src}
-                    alt={`Photo ${index + 1}`}
-                    className="size-20 rounded-lg border-2 border-ink object-cover shadow-toy-xs sm:size-24"
+                    alt={`Photo ${index + 1} — drag onto another photo to swap`}
+                    draggable={false}
+                    className={`size-20 rounded-lg border-2 object-cover shadow-toy-xs sm:size-24 ${
+                      drag.overId === photo.id ? 'border-mauve-500' : 'border-ink'
+                    }`}
                   />
+                  <span
+                    aria-hidden
+                    className="absolute -left-1 -top-1 grid size-5 place-items-center rounded-full border-2 border-ink bg-paper text-[10px] font-black text-ink"
+                  >
+                    {index + 1}
+                  </span>
                   <button
                     type="button"
                     onClick={() => removePhoto(photo.id)}
