@@ -11,7 +11,7 @@ import StripCanvas from '@/components/strip/StripCanvas'
 import { Btn, Window } from '@/components/ui/kit'
 import { Ico } from '@/components/ui/icons'
 import { EXPORT_WIDTH } from '@/engine/compose'
-import { downloadBlob, exportStripPng, shareBlob, suggestedFilename } from '@/engine/export'
+import { downloadBlob, exportStripPng, shareBlob, sharePageLink, copyPageLink, suggestedFilename } from '@/engine/export'
 import { playCue } from '@/engine/audio'
 import { useBoothStore } from '@/state/useBoothStore'
 
@@ -54,11 +54,33 @@ export default function ResultStep() {
     setNote('')
     try {
       const blob = await build()
-      const shared = await shareBlob(blob, suggestedFilename())
-      setNote(shared ? 'Sent to your share sheet.' : 'Sharing is not available in this browser. Download instead.')
+      const outcome = await shareBlob(blob, suggestedFilename())
+      if (outcome === 'shared') setNote('Sent to your share sheet.')
+      else if (outcome === 'cancelled') setNote('Sharing was cancelled — your strip waits right here.')
+      else await shareAsLink()
     } finally {
       setWorking(false)
     }
+  }
+
+  /** The strip itself never leaves the tab, so when a browser refuses image files the
+      fallback shares the app — clearly labelled as such, with the PNG one tap away. */
+  const shareAsLink = async () => {
+    const linkShare = await sharePageLink()
+    if (linkShare === 'shared') {
+      setNote('Your browser cannot receive image files, so we shared a link to Dubu Studio. Download the PNG for the strip itself.')
+      return
+    }
+    if (linkShare === 'cancelled') {
+      setNote('Sharing was cancelled — your strip waits right here.')
+      return
+    }
+    const copied = await copyPageLink()
+    setNote(
+      copied
+        ? 'Your browser cannot share images — the app link is on your clipboard instead. Download the PNG for the strip itself.'
+        : 'Sharing is not available in this browser. Download the PNG instead.',
+    )
   }
 
   return (

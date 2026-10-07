@@ -51,14 +51,46 @@ export function downloadBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
 
-/** Use the native share sheet when it can take a file; return false when unavailable. */
-export async function shareBlob(blob: Blob, filename: string): Promise<boolean> {
+/**
+ * Use the native share sheet when it can take a file. Desktop browsers usually refuse
+ * image files, so this reports *why* it did not work and the caller picks a fallback:
+ * share a link to the app, then copy the link. A cancel is its own outcome — dismissing
+ * the share sheet is not "unavailable".
+ */
+export type ShareOutcome = 'shared' | 'cancelled' | 'unsupported'
+
+export async function shareBlob(blob: Blob, filename: string): Promise<ShareOutcome> {
   const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean }
-  if (!nav.share || !nav.canShare) return false
+  if (!nav.share || !nav.canShare) return 'unsupported'
   const file = new File([blob], filename, { type: blob.type })
-  if (!nav.canShare({ files: [file] })) return false
+  if (!nav.canShare({ files: [file] })) return 'unsupported'
   try {
     await nav.share({ files: [file], title: 'My photo strip' })
+    return 'shared'
+  } catch (err) {
+    return (err as DOMException)?.name === 'AbortError' ? 'cancelled' : 'unsupported'
+  }
+}
+
+/** Link-share fallback for browsers that reject files but do have a share sheet. */
+export async function sharePageLink(): Promise<ShareOutcome> {
+  if (!navigator.share) return 'unsupported'
+  try {
+    await navigator.share({
+      title: 'Dubu Studio — photo strips made in your browser',
+      text: 'Make a cute photo strip — every photo stays on your own device.',
+      url: window.location.href,
+    })
+    return 'shared'
+  } catch (err) {
+    return (err as DOMException)?.name === 'AbortError' ? 'cancelled' : 'unsupported'
+  }
+}
+
+/** Last resort: the clipboard. True when the link landed there. */
+export async function copyPageLink(): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(window.location.href)
     return true
   } catch {
     return false

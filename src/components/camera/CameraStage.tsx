@@ -34,6 +34,7 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
   const [error, setError] = useState('')
   const [count, setCount] = useState<number | null>(null)
   const [flash, setFlash] = useState(0)
+  const [covered, setCovered] = useState(false)
 
   const start = useCallback(async () => {
     const video = videoRef.current
@@ -92,12 +93,37 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
     later(() => playCue('shutter'), COUNT_FROM * 1000 - 120)
   }, [count, mirror, onCapture, later])
 
+  /** Cover: stop the webcam so the hardware is truly off, light or LED out. Uncover: open it again. */
+  const toggleCover = () => {
+    if (!covered) {
+      handleRef.current?.stop()
+      handleRef.current = null
+      for (const id of timersRef.current) window.clearTimeout(id)
+      timersRef.current = []
+      setCount(null)
+      setCovered(true)
+    } else {
+      setCovered(false)
+      void start()
+    }
+  }
+
   return (
     <div className="window overflow-hidden">
       <div className="window-bar">
         <Ico name="camera" className="size-4" />
         <span className="text-sm font-bold">Camera</span>
         <span className="ml-auto flex items-center gap-1">
+          <button
+            type="button"
+            onClick={toggleCover}
+            aria-pressed={covered}
+            aria-label={covered ? 'Uncover the camera' : 'Cover the camera'}
+            title={covered ? 'Uncover the camera' : 'Cover the camera'}
+            className="chunky grid size-6 place-items-center rounded-md border-2 border-ink bg-paper text-ink shadow-toy-xs"
+          >
+            <Ico name={covered ? 'eye' : 'eye-off'} className="size-3.5" />
+          </button>
           <span className="win-dot" aria-hidden />
           <span className="win-dot win-dot-butter" aria-hidden />
         </span>
@@ -114,7 +140,21 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
           style={{ filter: filterCss, transform: mirror ? 'scaleX(-1)' : undefined }}
         />
 
-        {status === 'starting' && (
+        {covered && (
+          <div className="absolute inset-0 grid place-items-center bg-blush-100/95 p-5 text-center">
+            <div className="max-w-xs">
+              <span aria-hidden className="mx-auto grid size-12 place-items-center rounded-xl border-2 border-ink bg-paper text-mauve-500 shadow-toy-xs">
+                <Ico name="circle-off" className="size-6" />
+              </span>
+              <p className="mt-3 font-display text-base font-bold text-ink">The lens is covered</p>
+              <p className="mt-1 text-sm font-semibold text-ink-soft">
+                The camera is fully off — nothing is being recorded.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {status === 'starting' && !covered && (
           <div className="absolute inset-0 grid place-items-center bg-ink/70 text-center">
             <p className="animate-wiggle flex items-center gap-2 font-display text-base font-bold text-white sm:text-lg">
               <Ico name="loader" className="size-5 animate-spin" />
@@ -123,7 +163,7 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
           </div>
         )}
 
-        {status === 'error' && (
+        {status === 'error' && !covered && (
           <div className="absolute inset-0 grid place-items-center bg-blush-100/95 p-5 text-center">
             <div className="max-w-xs">
               <span aria-hidden className="mx-auto grid size-12 place-items-center rounded-xl border-2 border-ink bg-paper text-mauve-500 shadow-toy-xs">
@@ -138,7 +178,7 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
           </div>
         )}
 
-        {status === 'live' && (
+        {status === 'live' && !covered && (
           <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-1 text-xs font-bold text-ink">
             <Ico name="lock" className="size-3.5" />
             Photos are never stored
@@ -156,7 +196,7 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
           </div>
         )}
 
-        {count === null && status === 'live' && (
+        {count === null && status === 'live' && !covered && (
           <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
             <span className="animate-pop rounded-full bg-white/85 px-3 py-1 text-xs font-extrabold text-ink">
               Press the shutter to shoot
@@ -174,7 +214,7 @@ export default function CameraStage({ filterCss, mirror, onCapture }: CameraStag
         <button
           type="button"
           onClick={runCountdown}
-          disabled={status !== 'live' || count !== null}
+          disabled={covered || status !== 'live' || count !== null}
           aria-label="Take a photo"
           className="chunky grid size-20 place-items-center rounded-full border-[3px] border-ink bg-blush-300 text-ink shadow-toy disabled:opacity-40 sm:size-24"
         >
