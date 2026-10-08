@@ -13,3 +13,4 @@ yarn-error.log*
 next-env.d.ts
 # Freebuff workspace metadata
 .freebuff/
+.claude/
